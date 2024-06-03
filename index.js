@@ -33,6 +33,7 @@ async function run() {
     await client.connect();
 
     const userCollection = client.db("NatureNexus").collection("users");
+    const packegCollection = client.db("NatureNexus").collection("packegs");
 
     // jwt
     app.post("/jwt", async (req, res) => {
@@ -73,26 +74,21 @@ async function run() {
       res.send(result);
     });
 
-    app.get(
-      "/users/admin/:email",
-      verifyMiddleware,
-      verifyAdmin,
-      async (req, res) => {
-        const email = req.params.email;
-        if (email !== req.decoded.email) {
-          return res.status(403).send({ message: "forbidden access" });
-        }
-        const query = { email: email };
-        const user = await userCollection.findOne(query);
-        let admin = false;
-        if (user) {
-          admin = user?.role === "admin";
-        }
-        res.send({ admin });
+    app.get("/users/admin/:email", verifyMiddleware, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
       }
-    );
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let admin = false;
+      if (user) {
+        admin = user?.role === "admin";
+      }
+      res.send({ admin });
+    });
 
-    app.post("/users", verifyAdmin, async (req, res) => {
+    app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
       const existingUser = await userCollection.findOne(query);
@@ -136,6 +132,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // Packeges Related Route
+
+    app.post("/addpackage", async (req, res) => {
+      const packeageData = req.body;
+      const result = await packegCollection.insertOne(packeageData);
       res.send(result);
     });
 

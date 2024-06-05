@@ -34,6 +34,7 @@ async function run() {
 
     const userCollection = client.db("NatureNexus").collection("users");
     const packegCollection = client.db("NatureNexus").collection("packegs");
+    const bookingCollection = client.db("NatureNexus").collection("booking");
 
     // jwt
     app.post("/jwt", async (req, res) => {
@@ -70,7 +71,16 @@ async function run() {
     };
 
     app.get("/users", verifyMiddleware, verifyAdmin, async (req, res) => {
-      const result = await userCollection.find().toArray();
+      const { filter, search } = req.query;
+      let query = {};
+      if (filter) {
+        query.role = filter;
+      }
+
+      if (search) {
+        query.email = { $regex: new RegExp(search, "i") };
+      }
+      const result = await userCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -86,6 +96,16 @@ async function run() {
         admin = user?.role === "admin";
       }
       res.send({ admin });
+    });
+    app.get("/users/guid/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let TourGuide = false;
+      if (user) {
+        TourGuide = user?.role === "TourGuide";
+      }
+      res.send({ TourGuide });
     });
 
     app.post("/users", async (req, res) => {
@@ -134,6 +154,19 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
+    app.get("/findGuide", async (req, res) => {
+      const GuidUser = await userCollection
+        .find({ role: "TourGuide" })
+        .toArray();
+      res.send(GuidUser);
+    });
+
+    app.get("/guidProfile/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
 
     // Packeges Related Route
 
@@ -152,6 +185,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await packegCollection.findOne(query);
+      res.send(result);
+    });
+
+    // Booking Route
+
+    app.post("/booking", async (req, res) => {
+      const bookingData = req.body;
+      const result = await bookingCollection.insertOne(bookingData);
       res.send(result);
     });
 

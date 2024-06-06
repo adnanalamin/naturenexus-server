@@ -108,6 +108,13 @@ async function run() {
       res.send({ TourGuide });
     });
 
+    app.get("/findusers/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      res.send(user);
+    });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
@@ -141,36 +148,33 @@ async function run() {
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
-          role: "Tour Guide",
+          role: "TourGuide",
         },
       };
       const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
 
-    app.patch(
-      "/users/profile/:email",
-      async (req, res) => {
-        const userEmail = req.params.email;
-        const query = { email :  userEmail};
-        const updatedData = req.body;
-        const updatedDoc = {
-          $set: {
-            phone: updatedData.phone,
-            address: updatedData.address,
-            city: updatedData.city,
-            age: updatedData.age,
-            skills: updatedData.skills,
-            workExperience: updatedData.workExperience,
-            education: updatedData.education,
-            gender: updatedData.gender,
-            aboutUser: updatedData.aboutUser
-          },
-        };
-        const result = await userCollection.updateOne(query,  updatedDoc);
-        res.send(result);
-      }
-    );
+    app.patch("/users/profile/:email", async (req, res) => {
+      const userEmail = req.params.email;
+      const query = { email: userEmail };
+      const updatedData = req.body;
+      const updatedDoc = {
+        $set: {
+          phone: updatedData.phone,
+          address: updatedData.address,
+          city: updatedData.city,
+          age: updatedData.age,
+          skills: updatedData.skills,
+          workExperience: updatedData.workExperience,
+          education: updatedData.education,
+          gender: updatedData.gender,
+          aboutUser: updatedData.aboutUser,
+        },
+      };
+      const result = await userCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
 
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;

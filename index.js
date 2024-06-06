@@ -148,6 +148,30 @@ async function run() {
       res.send(result);
     });
 
+    app.patch(
+      "/users/profile/:email",
+      async (req, res) => {
+        const userEmail = req.params.email;
+        const query = { email :  userEmail};
+        const updatedData = req.body;
+        const updatedDoc = {
+          $set: {
+            phone: updatedData.phone,
+            address: updatedData.address,
+            city: updatedData.city,
+            age: updatedData.age,
+            skills: updatedData.skills,
+            workExperience: updatedData.workExperience,
+            education: updatedData.education,
+            gender: updatedData.gender,
+            aboutUser: updatedData.aboutUser
+          },
+        };
+        const result = await userCollection.updateOne(query,  updatedDoc);
+        res.send(result);
+      }
+    );
+
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };

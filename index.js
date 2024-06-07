@@ -35,6 +35,7 @@ async function run() {
     const userCollection = client.db("NatureNexus").collection("users");
     const packegCollection = client.db("NatureNexus").collection("packegs");
     const bookingCollection = client.db("NatureNexus").collection("booking");
+    const wishlistCollection = client.db("NatureNexus").collection("wishlist");
 
     // jwt
     app.post("/jwt", async (req, res) => {
@@ -221,6 +222,28 @@ async function run() {
     app.post("/booking", async (req, res) => {
       const bookingData = req.body;
       const result = await bookingCollection.insertOne(bookingData);
+      res.send(result);
+    });
+
+    // WishList
+
+    app.post("/addwishlist", async (req, res) => {
+      const wishlistData = req.body;
+      const result = await wishlistCollection.insertOne(wishlistData);
+      res.send(result);
+    });
+
+    app.get("/wishlist/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { userEmail: email };
+      const result = await wishlistCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete("/deletewishlist/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await wishlistCollection.deleteOne(query);
       res.send(result);
     });
 

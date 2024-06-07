@@ -232,6 +232,13 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/deletebooking/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // WishList
 
     app.post("/addwishlist", async (req, res) => {
@@ -253,6 +260,8 @@ async function run() {
       const result = await wishlistCollection.deleteOne(query);
       res.send(result);
     });
+
+    
 
     await client.db("admin").command({ ping: 1 });
     console.log(

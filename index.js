@@ -225,6 +225,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/getbooking/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // WishList
 
     app.post("/addwishlist", async (req, res) => {

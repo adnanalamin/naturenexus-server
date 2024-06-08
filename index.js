@@ -36,6 +36,7 @@ async function run() {
     const packegCollection = client.db("NatureNexus").collection("packegs");
     const bookingCollection = client.db("NatureNexus").collection("booking");
     const wishlistCollection = client.db("NatureNexus").collection("wishlist");
+    const storyCollection = client.db("NatureNexus").collection("story");
 
     // jwt
     app.post("/jwt", async (req, res) => {
@@ -204,6 +205,7 @@ async function run() {
       const result = await packegCollection.insertOne(packeageData);
       res.send(result);
     });
+    
 
     app.get("/packege", async (req, res) => {
       const result = await packegCollection.find().toArray();
@@ -258,6 +260,26 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await wishlistCollection.deleteOne(query);
+      res.send(result);
+    });
+
+
+    // Add Story
+    app.post("/addstory", async (req, res) => {
+      const storyData = req.body;
+      const result = await storyCollection.insertOne(storyData);
+      res.send(result);
+    });
+
+    app.get("/getStorys", async (req, res) => {
+      const result = await storyCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/findStory/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await storyCollection.findOne(query);
       res.send(result);
     });
 

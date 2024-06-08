@@ -37,6 +37,7 @@ async function run() {
     const bookingCollection = client.db("NatureNexus").collection("booking");
     const wishlistCollection = client.db("NatureNexus").collection("wishlist");
     const storyCollection = client.db("NatureNexus").collection("story");
+    const tourTypeCollection = client.db("NatureNexus").collection("tourtype");
 
     // jwt
     app.post("/jwt", async (req, res) => {
@@ -205,7 +206,6 @@ async function run() {
       const result = await packegCollection.insertOne(packeageData);
       res.send(result);
     });
-    
 
     app.get("/packege", async (req, res) => {
       const result = await packegCollection.find().toArray();
@@ -263,7 +263,6 @@ async function run() {
       res.send(result);
     });
 
-
     // Add Story
     app.post("/addstory", async (req, res) => {
       const storyData = req.body;
@@ -283,7 +282,18 @@ async function run() {
       res.send(result);
     });
 
-    
+    // Tour Type
+    app.get("/tourtype", async (req, res) => {
+      const result = await tourTypeCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/tourCategory/:tourType", async (req, res) => {
+      const type = req.params.tourType;
+      const query = { tourType: type };
+      const result = await packegCollection.find(query).toArray();
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(

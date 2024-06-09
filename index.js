@@ -240,6 +240,49 @@ async function run() {
       const result = await bookingCollection.deleteOne(query);
       res.send(result);
     });
+    app.get("/myBooking", async (req, res) => {
+      const { name } = req.query;
+      const query = { tourGuide: name };
+      const page = parseInt(req.query.page);
+      console.log(page);
+      const size = parseInt(req.query.size);
+      console.log(size);
+      const result = await bookingCollection
+        .find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
+      res.send(result);
+    });
+
+    app.patch("/acceptedbooking/status/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: "Accepted",
+        },
+      };
+      const result = await bookingCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.patch("/booking/status/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: "Rejected",
+        },
+      };
+      const result = await bookingCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.get("/myTotalBooking", async (req, res) => {
+      const count = await bookingCollection.estimatedDocumentCount();
+      res.send({ count });
+    });
 
     // WishList
 

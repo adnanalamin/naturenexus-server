@@ -8,7 +8,7 @@ const port = process.env.PORT || 5000;
 
 const app = express();
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: ["https://naturenexus-232f7.firebaseapp.com/", "https://naturenexus-232f7.web.app"],
   credentials: true,
   optionSuccessStatus: 200,
 };
@@ -75,6 +75,8 @@ async function run() {
 
     app.get("/users", verifyMiddleware, verifyAdmin, async (req, res) => {
       const { filter, search } = req.query;
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
       let query = {};
       if (filter) {
         query.role = filter;
@@ -83,7 +85,11 @@ async function run() {
       if (search) {
         query.email = { $regex: new RegExp(search, "i") };
       }
-      const result = await userCollection.find(query).toArray();
+      const result = await userCollection
+        .find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
     });
 
@@ -146,7 +152,7 @@ async function run() {
       }
     );
 
-    app.patch("/users/guide/:id", async (req, res) => {
+    app.patch("/users/guide/:id",  async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -179,12 +185,6 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/users/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await userCollection.deleteOne(query);
-      res.send(result);
-    });
     app.get("/findGuide", async (req, res) => {
       const GuidUser = await userCollection
         .find({ role: "TourGuide" })
@@ -197,6 +197,11 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await userCollection.findOne(query);
       res.send(result);
+    });
+
+    app.get("/userCount", async (req, res) => {
+      const count = await userCollection.estimatedDocumentCount();
+      res.send({ count });
     });
 
     // Packeges Related Route
@@ -227,10 +232,13 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getbooking/:email", async (req, res) => {
-      const email = req.params.email;
+    app.get("/getbooking", async (req, res) => {
+      const { email } = req.query;
       const query = { email: email };
-      const result = await bookingCollection.find(query).toArray();
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      const result = await bookingCollection.find(query).skip(page * size)
+      .limit(size).toArray();
       res.send(result);
     });
 
@@ -244,9 +252,7 @@ async function run() {
       const { name } = req.query;
       const query = { tourGuide: name };
       const page = parseInt(req.query.page);
-      console.log(page);
       const size = parseInt(req.query.size);
-      console.log(size);
       const result = await bookingCollection
         .find(query)
         .skip(page * size)
@@ -292,10 +298,18 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/wishlist/:email", async (req, res) => {
-      const email = req.params.email;
+    app.get("/wishlist", async (req, res) => {
+      const { email } = req.query;
       const query = { userEmail: email };
-      const result = await wishlistCollection.find(query).toArray();
+      const page = parseInt(req.query.page);
+      console.log(page)
+      const size = parseInt(req.query.size);
+      console.log(size)
+      const result = await wishlistCollection
+        .find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
     });
 
@@ -304,6 +318,11 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await wishlistCollection.deleteOne(query);
       res.send(result);
+    });
+
+    app.get("/wishlistCount", async (req, res) => {
+      const count = await wishlistCollection.estimatedDocumentCount();
+      res.send({ count });
     });
 
     // Add Story
@@ -338,10 +357,10 @@ async function run() {
       res.send(result);
     });
 
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
